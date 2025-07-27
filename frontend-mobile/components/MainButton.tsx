@@ -16,7 +16,7 @@ export default function MainButton(props: ButtonInterface) {
 const styles = StyleSheet.create({
      btn: {
           borderRadius: 50,
-          paddingVertical: 5,
+          paddingVertical: 7,
           paddingHorizontal: 20,
      },
      text: {

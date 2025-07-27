@@ -11,7 +11,7 @@ export default function FurnitureScreen() {
 
      return (
           <SafeAreaView style={[mainStyles.authScreens]}>
-               <Header />
+               <Header role="user" />
 
                <View style={[styles.imagePlaceholder]}>
                     <Image source={require("@/assets/images/favicon.png")} contentFit="contain" alt="" placeholder={require("@/assets/images/favicon.png")} style={{ height: '100%', width: '100%' }} />

@@ -39,7 +39,7 @@ export default function FurnitureHome() {
 
      return (
           <SafeAreaView style={[mainStyles.authScreens]}>
-               <Header />
+               <Header role="user" />
 
                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={[styles.categories]}>
                     {Categories.map((category) => (

@@ -4,6 +4,7 @@ import { IError } from '../middleware/error';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import process from 'process';
+import { sendPasswordResetEmail } from '../utils/email';
 
 // Generate JWT Token
 const generateToken = (id: string): string => {
@@ -158,85 +159,94 @@ export const logout = (req: Request, res: Response, next: NextFunction) => {
 export const forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await User.findOne({ email: req.body.email });
-
+    
         if (!user) {
             return next({
                 message: 'There is no user with that email',
                 statusCode: 404,
             } as IError);
         }
-
-        // Get reset token
-        const resetToken = user.getResetPasswordToken();
-
+    
+        // Generate reset token
+        const resetToken = generateToken(user._id);
+        
+        // Hash token and set to resetPasswordToken field
+        user.resetPasswordToken = crypto
+            .createHash('sha256')
+            .update(resetToken)
+            .digest('hex');
+      
+        // Set expire (10 minutes)
+        user.resetPasswordExpire = new Date(Date.now() + 10 * 60 * 1000);
+  
         await user.save({ validateBeforeSave: false });
-
-        // Create reset URL
-        const resetUrl = `${req.protocol}://${req.get('host')}/api/auth/reset/?resettoken=${resetToken}`;
-
-        // TODO: Send email with reset URL
-        console.log(`Password reset token: ${resetToken}`);
-        console.log(`Reset URL: ${resetUrl}`);
-
-        res.status(200).json({
-            success: true,
-            data: 'Email sent',
-        });
+  
+        // Create reset URL with deep link
+        const resetUrl = `furnitureshop://reset-password?token=${resetToken}`;
+  
+        try {
+            await sendPasswordResetEmail(user.email, resetUrl);
+            console.log("reset Url: ", resetUrl, " reset token: ", resetToken)
+            res.status(200).json({
+                success: true,
+                data: 'Email sent',
+            });
+        } catch(emailError) {
+            console.error("Email sending error: ", emailError);
+            // Reset the token and expire in case of error
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpire = undefined;
+            await user.save({ validateBeforeSave: false });
+            next({
+                message: 'Email could not be sent',
+                statusCode: 500,
+            } as IError);
+        }
     } catch (err: any) {
-        console.error(err);
+        console.error("Error in forgotPassword: ", err);
+      
         next({
-            message: err.message || 'Server Error',
+            message: 'Email could not be sent',
             statusCode: 500,
         } as IError);
     }
 };
-
+  
 // @desc    Reset password
 // @route   PUT /api/v1/auth/resetpassword/:resettoken
 // @access  Public
 export const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Get hashed token
-        const resetPasswordToken = crypto
-            .createHash('sha256')
-            .update(req.query.resettoken as string)
-            .digest('hex');
-        
-        const { newPassword, confirmPassword } = req.body;
-        
-        if (!newPassword || !confirmPassword) {
-            return next({
-                message: 'Please provide new Password and confirm it',
-                statusCode: 400,
-            } as IError);
-        }
-
+        const resetPasswordToken = crypto.createHash('sha256').update(req.body.token).digest('hex');
+  
         const user = await User.findOne({
             resetPasswordToken,
             resetPasswordExpire: { $gt: Date.now() },
         });
-
+  
         if (!user) {
             return next({
                 message: 'Invalid token or token has expired',
                 statusCode: 400,
             } as IError);
         }
-
+  
         // Set new password
-        if (newPassword !== confirmPassword) {
-            return next({
-                message: 'Password must match',
-                statusCode: 400,
-            } as IError)
-        }
-
-        user.password = newPassword;
+        user.password = req.body.password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
+      
         await user.save();
-
-        sendTokenResponse(user, 200, res);
+  
+        // Create token for auto-login after password reset
+        const token = generateToken(user._id);
+  
+        res.status(200).json({
+            success: true,
+            token,
+            data: { id: user._id, email: user.email, name: user.name, role: user.role },
+        });
     } catch (err: any) {
         next({
             message: err.message || 'Server Error',

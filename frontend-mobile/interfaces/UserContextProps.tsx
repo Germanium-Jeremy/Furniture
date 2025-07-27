@@ -22,7 +22,7 @@ export default interface UserContext {
      handleLogin: () => void
      handleRegister: () => void
      handleGetResetLink: () => void
-     handleReset: () => void
+     handleReset: (token: string) => void
 }
 
 export const defaultUserContextData: UserContext = {

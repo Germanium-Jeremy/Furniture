@@ -1,6 +1,7 @@
 import UserContext, { defaultUserContextData } from "@/interfaces/UserContextProps";
 import { useRouter } from "expo-router";
 import React, { createContext, ReactNode, useState } from "react";
+import { Alert } from "react-native";
 
 export const UserContect = createContext<UserContext>(defaultUserContextData)
 
@@ -152,7 +153,56 @@ export const UserContextProvider: React.FC<{ children: ReactNode }> = ({ childre
           }
      }
 
-     const handleReset = async () => { }
+     const handleReset = async (token: string) => {
+          if (!token) {
+               Alert.alert('Error', 'Token is required')
+               return
+          }
+
+          if (!userNewPassword.trim() || userNewPassword.trim() == '') {
+               Alert.alert('Error', 'New Password is required')
+               return
+          }
+
+          if (!userConfirmPassword.trim() || userConfirmPassword.trim() == '') {
+               Alert.alert('Error', 'Confirm Password is required')
+               return
+          }
+
+          if (userNewPassword !== userConfirmPassword) {
+               Alert.alert('Error', 'Passwords do not match')
+               return
+          }
+
+          try {
+               setLoading(true)
+               setGotError('')
+
+               const response = await fetch(`http://localhost:5000/api/auth/reset`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, password: userNewPassword })
+               })
+
+               if (!response.ok) {
+                    const errorResponse = await response.json();
+                    setGotError(errorResponse.message.replace("User validation failed: ", "") || 'Failed to reset password');
+                    setLoading(false);
+                    console.error('Failed to reset password', errorResponse.message)
+                    return;
+               }
+
+               const responseJson = await response.json();
+               console.log("User Data: ", responseJson)
+                              
+               setLoading(false);
+               response.status === 200 && navigate.replace("/(auth)/login");
+          } catch (error) {
+               setGotError("Failed to react server");
+               setLoading(false);
+               console.error("Error during reset:", error);
+          }
+     }
 
      return (
           <UserContect.Provider value={{
