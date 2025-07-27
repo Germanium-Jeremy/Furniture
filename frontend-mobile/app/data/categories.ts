@@ -1,0 +1,15 @@
+export const Categories = [
+     { id: 1, name: 'All', active: true, link: '' },
+     { id: 2, name: 'Chairs', active: false, link: '' },
+     { id: 3, name: 'Tables', active: false, link: '' },
+     { id: 4, name: 'Sofa', active: false, link: '' },
+     { id: 5, name: 'Beds', active: false, link: '' },
+     { id: 6, name: 'Wardrobe', active: false, link: '' },
+     { id: 7, name: 'desk', active: false, link: '' },
+     { id: 8, name: 'shelf', active: false, link: '' },
+     { id: 9, name: 'cabinet', active: false, link: '' },
+     { id: 10, name: 'dining', active: false, link: '' },
+     { id: 11, name: 'office', active: false, link: '' },
+     { id: 12, name: 'outdoor', active: false, link: '' },
+     { id: 13, name: 'other', active: false, link: '' },
+]
