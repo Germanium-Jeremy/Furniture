@@ -4,11 +4,10 @@
   "description": "Backend for Furniture Shop E-commerce Platform",
   "main": "dist/index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "nodemon src/index.ts",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "test": "jest",
-    "vercel-build": "npm run build"
+    "start": "NODE_ENV=production node dist/index.js",
+    "vercel-build": "npm install && npm run build"
   },
   "dependencies": {
     "@types/nodemailer": "^6.4.17",
