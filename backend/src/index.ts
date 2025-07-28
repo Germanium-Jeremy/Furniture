@@ -67,25 +67,25 @@ app.use((err: ErrorWithStatus, req: Request, res: Response, next: NextFunction) 
 // Start server
 const PORT = process.env.PORT || 5000;
 
-const startServer = async () => {
-    try {
-        await connectDB();
-            const server = app.listen(PORT, () => {
-            console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-        });
+// const startServer = async () => {
+//     try {
+//         await connectDB();
+//             const server = app.listen(PORT, () => {
+//             console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+//         });
 
-        // Handle unhandled promise rejections
-        process.on('unhandledRejection', (err: Error, promise) => {
-            console.log(`Error: ${err.message}`);
-            // Close server & exit process
-            server.close(() => process.exit(1));
-        });
-    } catch (error) {
-        console.error('Failed to start server:', error);
-        process.exit(1);
-    }
-};
+//         // Handle unhandled promise rejections
+//         process.on('unhandledRejection', (err: Error, promise) => {
+//             console.log(`Error: ${err.message}`);
+//             // Close server & exit process
+//             server.close(() => process.exit(1));
+//         });
+//     } catch (error) {
+//         console.error('Failed to start server:', error);
+//         process.exit(1);
+//     }
+// };
 
-startServer();
+// startServer();
 
 export default app;
